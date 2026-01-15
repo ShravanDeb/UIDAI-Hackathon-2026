@@ -8,6 +8,7 @@ engine = create_engine(DB_URI)
 def get_aggregated_data():
     """
     Fetches pre-aggregated data for charts to avoid loading 5M rows.
+    FIX: Uses DATE_FORMAT to create 'month' from 'date' column.
     """
     query = """
     SELECT 
@@ -16,11 +17,11 @@ def get_aggregated_data():
         state,
         SUM(count) as total_count
     FROM (
-        SELECT month, district, state, (count_0_5 + count_5_17 + count_18_plus) as count FROM enrolment
+        SELECT DATE_FORMAT(date, '%Y-%m') as month, district, state, (count_0_5 + count_5_17 + count_18_plus) as count FROM enrolment
         UNION ALL
-        SELECT month, district, state, (count_5_17 + count_17) as count FROM demographic
+        SELECT DATE_FORMAT(date, '%Y-%m') as month, district, state, (count_5_17 + count_17) as count FROM demographic
         UNION ALL
-        SELECT month, district, state, (count_5_17 + count_17) as count FROM biometric
+        SELECT DATE_FORMAT(date, '%Y-%m') as month, district, state, (count_5_17 + count_17) as count FROM biometric
     ) as combined
     GROUP BY month, district, state
     """
